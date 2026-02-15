@@ -2,20 +2,6 @@ resource "vultr_dns_domain" "soap_coffee" {
   domain = "soap.coffee"
 }
 
-resource "vultr_dns_record" "a_root" {
-  domain = vultr_dns_domain.soap_coffee.domain
-  name   = ""
-  type   = "A"
-  data   = "45.32.147.140"
-}
-
-resource "vultr_dns_record" "a_staging" {
-  domain = vultr_dns_domain.soap_coffee.domain
-  name   = "staging"
-  type   = "A"
-  data   = "45.32.147.140"
-}
-
 resource "vultr_dns_record" "mx_primary" {
   domain   = vultr_dns_domain.soap_coffee.domain
   name     = ""

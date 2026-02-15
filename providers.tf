@@ -8,10 +8,20 @@ terraform {
   }
 
   required_providers {
+    helm = {
+      source  = "hashicorp/helm"
+      version = "~> 2.17"
+    }
     vultr = {
       source  = "vultr/vultr"
       version = "2.29.1"
     }
+  }
+}
+
+provider "helm" {
+  kubernetes {
+    config_path = var.kubeconfig_path
   }
 }
 

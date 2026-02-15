@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "soap-coffee.fullname" . }}
+  labels:
+    {{- include "soap-coffee.labels" . | nindent 4 }}
+  annotations:
+    keel.sh/policy: force
+    keel.sh/trigger: poll
+    keel.sh/match-tag: "true"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "soap-coffee.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "soap-coffee.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: soap-coffee
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: Always
+          env:
+            - name: SOAP_COFFEE_INTERFACE
+              value: "0.0.0.0"
+            {{- if .Values.staging }}
+            - name: SOAP_COFFEE_STAGING
+              value: "1"
+            {{- end }}
+          ports:
+            - containerPort: 8901
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8901
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8901

@@ -1,0 +1,7 @@
+image:
+  repository: ams.vultrcr.com/lthms/www/soap.coffee
+  tag: live
+
+domain: soap.coffee
+
+staging: false
