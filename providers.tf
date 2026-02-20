@@ -16,6 +16,10 @@ terraform {
       source  = "vultr/vultr"
       version = "2.29.1"
     }
+    random = {
+      source  = "hashicorp/random"
+      version = "~> 3.6"
+    }
   }
 }
 

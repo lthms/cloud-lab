@@ -32,3 +32,45 @@ resource "helm_release" "soap_coffee_staging" {
     value = "true"
   }
 }
+
+resource "random_password" "postgresql_superuser" {
+  length  = 32
+  special = false
+}
+
+resource "random_password" "miniflux_admin" {
+  length  = 32
+  special = false
+}
+
+resource "helm_release" "postgresql" {
+  name  = "postgresql"
+  chart = "${path.module}/charts/postgresql"
+
+  set_sensitive {
+    name  = "password"
+    value = random_password.postgresql_superuser.result
+  }
+
+  set_sensitive {
+    name  = "ext-postgres-operator.postgres.password"
+    value = random_password.postgresql_superuser.result
+  }
+}
+
+resource "helm_release" "miniflux" {
+  name  = "miniflux"
+  chart = "${path.module}/charts/miniflux"
+
+  depends_on = [helm_release.postgresql]
+
+  set_sensitive {
+    name  = "admin.password"
+    value = random_password.miniflux_admin.result
+  }
+}
+
+output "miniflux_admin_password" {
+  value     = random_password.miniflux_admin.result
+  sensitive = true
+}

@@ -1,0 +1,23 @@
+image:
+  repository: postgres
+  tag: "17"
+
+password: ""
+
+storage:
+  size: 10Gi
+  storageClass: vultr-block-storage
+
+ext-postgres-operator:
+  postgres:
+    host: "postgresql:5432"
+    user: postgres
+    password: ""
+    uri_args: "sslmode=disable"
+    default_database: postgres
+  deploymentAnnotations:
+    keel.sh/policy: force
+    keel.sh/trigger: poll
+    keel.sh/match-tag: "true"
+  env:
+    KEEP_SECRET_NAME: "true"

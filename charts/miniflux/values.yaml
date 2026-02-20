@@ -1,0 +1,13 @@
+image:
+  repository: miniflux/miniflux
+  tag: latest
+
+domain: rss.soap.coffee
+
+postgresql:
+  database: miniflux
+  user: miniflux
+
+admin:
+  username: admin
+  password: ""

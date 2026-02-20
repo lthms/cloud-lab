@@ -1,3 +1,5 @@
 .terraform*
 *.tfvars
 elsa.yaml
+charts/*/charts/
+charts/*/*.tgz

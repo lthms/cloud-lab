@@ -1,0 +1,18 @@
+apiVersion: db.movetokube.com/v1alpha1
+kind: Postgres
+metadata:
+  name: {{ include "miniflux.fullname" . }}-db
+spec:
+  database: {{ .Values.postgresql.database }}
+---
+apiVersion: db.movetokube.com/v1alpha1
+kind: PostgresUser
+metadata:
+  name: {{ include "miniflux.fullname" . }}-db-user
+spec:
+  role: {{ .Values.postgresql.user }}
+  database: {{ include "miniflux.fullname" . }}-db
+  secretName: {{ include "miniflux.fullname" . }}-db-credentials
+  privileges: OWNER
+  secretTemplate:
+    DATABASE_URL: "postgres://{{`{{.Role}}`}}:{{`{{.Password}}`}}@{{`{{.Host}}`}}/{{`{{.Database}}`}}?sslmode=disable"
