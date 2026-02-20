@@ -1,6 +1,7 @@
 .PHONY: init plan deploy destroy
 
 init:
+	git config core.hooksPath .githooks
 	terraform init
 
 plan:
