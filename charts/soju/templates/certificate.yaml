@@ -1,0 +1,13 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ include "soju.fullname" . }}-tls
+  labels:
+    {{- include "soju.labels" . | nindent 4 }}
+spec:
+  secretName: {{ include "soju.fullname" . }}-tls
+  issuerRef:
+    name: {{ .Values.tls.issuer }}
+    kind: ClusterIssuer
+  dnsNames:
+    - {{ .Values.domain }}

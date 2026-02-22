@@ -1,0 +1,22 @@
+apiVersion: db.movetokube.com/v1alpha1
+kind: Postgres
+metadata:
+  name: {{ include "soju.fullname" . }}-db
+spec:
+  database: {{ .Values.postgresql.database }}
+---
+apiVersion: db.movetokube.com/v1alpha1
+kind: PostgresUser
+metadata:
+  name: {{ include "soju.fullname" . }}-db-user
+spec:
+  role: {{ .Values.postgresql.user }}
+  database: {{ include "soju.fullname" . }}-db
+  secretName: {{ include "soju.fullname" . }}-db-credentials
+  privileges: OWNER
+  secretTemplate:
+    SOJU_DB_HOST: "{{`{{.Hostname}}`}}"
+    SOJU_DB_PORT: "{{`{{.Port}}`}}"
+    SOJU_DB_NAME: "{{`{{.Database}}`}}"
+    SOJU_DB_USER: "{{`{{.Role}}`}}"
+    SOJU_DB_PASSWORD: "{{`{{.Password}}`}}"

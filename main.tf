@@ -70,7 +70,29 @@ resource "helm_release" "miniflux" {
   }
 }
 
+resource "random_password" "soju_admin" {
+  length  = 32
+  special = false
+}
+
+resource "helm_release" "soju" {
+  name  = "soju"
+  chart = "${path.module}/charts/soju"
+
+  depends_on = [helm_release.postgresql]
+
+  set_sensitive {
+    name  = "admin.password"
+    value = random_password.soju_admin.result
+  }
+}
+
 output "miniflux_admin_password" {
   value     = random_password.miniflux_admin.result
+  sensitive = true
+}
+
+output "soju_admin_password" {
+  value     = random_password.soju_admin.result
   sensitive = true
 }

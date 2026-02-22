@@ -1,0 +1,106 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "soju.fullname" . }}
+  labels:
+    {{- include "soju.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "soju.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "soju.selectorLabels" . | nindent 8 }}
+    spec:
+      initContainers:
+        - name: config-generator
+          image: busybox:1.37
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              cat > /etc/soju/config << EOF
+              listen ircs://0.0.0.0:6697
+              listen unix+admin:///run/soju/admin
+              hostname ${SOJU_DOMAIN}
+              tls /tls/tls.crt /tls/tls.key
+              db postgres "host=${SOJU_DB_HOST} port=${SOJU_DB_PORT} dbname=${SOJU_DB_NAME} user=${SOJU_DB_USER} password=${SOJU_DB_PASSWORD} sslmode=disable"
+              message-store db
+              auth internal
+              EOF
+          env:
+            - name: SOJU_DOMAIN
+              value: {{ .Values.domain | quote }}
+            - name: SOJU_DB_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "soju.fullname" . }}-db-credentials
+                  key: SOJU_DB_HOST
+            - name: SOJU_DB_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "soju.fullname" . }}-db-credentials
+                  key: SOJU_DB_PORT
+            - name: SOJU_DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "soju.fullname" . }}-db-credentials
+                  key: SOJU_DB_NAME
+            - name: SOJU_DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "soju.fullname" . }}-db-credentials
+                  key: SOJU_DB_USER
+            - name: SOJU_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "soju.fullname" . }}-db-credentials
+                  key: SOJU_DB_PASSWORD
+          volumeMounts:
+            - name: config
+              mountPath: /etc/soju
+      containers:
+        - name: soju
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          command: ["soju", "-config", "/etc/soju/config"]
+          ports:
+            - containerPort: 6697
+          volumeMounts:
+            - name: config
+              mountPath: /etc/soju
+            - name: tls
+              mountPath: /tls
+              readOnly: true
+            - name: admin-socket
+              mountPath: /run/soju
+        - name: admin-setup
+          image: alpine:3.21
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              apk add --no-cache soju
+              while [ ! -S /run/soju/admin ]; do sleep 1; done
+              sojuctl -config /etc/soju/config user create -admin -username "$SOJU_ADMIN_USERNAME" -password "$SOJU_ADMIN_PASSWORD" || true
+              exec sleep infinity
+          env:
+            - name: SOJU_ADMIN_USERNAME
+              value: {{ .Values.admin.username | quote }}
+            - name: SOJU_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "soju.fullname" . }}
+                  key: admin-password
+          volumeMounts:
+            - name: config
+              mountPath: /etc/soju
+            - name: admin-socket
+              mountPath: /run/soju
+      volumes:
+        - name: config
+          emptyDir: {}
+        - name: tls
+          secret:
+            secretName: {{ include "soju.fullname" . }}-tls
+        - name: admin-socket
+          emptyDir: {}

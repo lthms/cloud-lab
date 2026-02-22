@@ -1,0 +1,16 @@
+image:
+  repository: codeberg.org/emersion/soju
+  tag: "v0.10.1"
+
+domain: irc.soap.coffee
+
+postgresql:
+  database: soju
+  user: soju
+
+admin:
+  username: admin
+  password: ""
+
+tls:
+  issuer: letsencrypt
