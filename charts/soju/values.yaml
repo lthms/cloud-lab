@@ -12,5 +12,15 @@ admin:
   username: admin
   password: ""
 
+resources:
+  soju:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+  adminSetup:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+
 tls:
   issuer: letsencrypt

@@ -5,3 +5,8 @@ image:
 domain: soap.coffee
 
 staging: false
+
+resources:
+  requests:
+    cpu: 10m
+    memory: 64Mi

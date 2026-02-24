@@ -38,6 +38,8 @@ spec:
                 secretKeyRef:
                   name: {{ include "miniflux.fullname" . }}
                   key: admin-password
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
           ports:
             - containerPort: 8080
           livenessProbe:

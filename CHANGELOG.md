@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-02-24
+
+- `soap-coffee` 0.7.1: Add CPU/memory resource requests
+- `miniflux` 0.1.1: Add CPU/memory resource requests
+- `postgresql` 0.1.1: Add CPU/memory resource requests
+- `soju` 0.1.1: Add CPU/memory resource requests
+
 ## 2026-02-22
 
 - `soju` 0.1.0: soju IRC bouncer with operator-managed PostgreSQL

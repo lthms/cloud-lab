@@ -28,6 +28,8 @@ spec:
                 secretKeyRef:
                   name: {{ include "postgresql.fullname" . }}
                   key: superuser-password
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
           ports:
             - containerPort: 5432
           volumeMounts:

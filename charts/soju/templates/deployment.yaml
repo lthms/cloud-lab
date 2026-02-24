@@ -64,6 +64,8 @@ spec:
         - name: soju
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           command: ["soju", "-config", "/etc/soju/config"]
+          resources:
+            {{- toYaml .Values.resources.soju | nindent 12 }}
           ports:
             - containerPort: 6697
           volumeMounts:
@@ -76,6 +78,8 @@ spec:
               mountPath: /run/soju
         - name: admin-setup
           image: alpine:3.21
+          resources:
+            {{- toYaml .Values.resources.adminSetup | nindent 12 }}
           command: ["/bin/sh", "-c"]
           args:
             - |

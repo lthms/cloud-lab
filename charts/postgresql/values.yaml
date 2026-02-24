@@ -4,6 +4,11 @@ image:
 
 password: ""
 
+resources:
+  requests:
+    cpu: 10m
+    memory: 128Mi
+
 storage:
   size: 10Gi
   storageClass: vultr-block-storage
