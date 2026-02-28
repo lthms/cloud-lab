@@ -87,6 +87,23 @@ resource "helm_release" "soju" {
   }
 }
 
+resource "random_password" "n8n_encryption_key" {
+  length  = 32
+  special = false
+}
+
+resource "helm_release" "n8n" {
+  name  = "n8n"
+  chart = "${path.module}/charts/n8n"
+
+  depends_on = [helm_release.postgresql]
+
+  set_sensitive {
+    name  = "encryptionKey"
+    value = random_password.n8n_encryption_key.result
+  }
+}
+
 output "miniflux_admin_password" {
   value     = random_password.miniflux_admin.result
   sensitive = true

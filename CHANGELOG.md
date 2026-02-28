@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-02-28
+
+- `n8n` 0.1.0: n8n workflow automation with operator-managed PostgreSQL
+
 ## 2026-02-24
 
 - `soap-coffee` 0.7.1: Add CPU/memory resource requests

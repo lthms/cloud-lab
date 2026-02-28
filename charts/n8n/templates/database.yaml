@@ -1,0 +1,22 @@
+apiVersion: db.movetokube.com/v1alpha1
+kind: Postgres
+metadata:
+  name: {{ include "n8n.fullname" . }}-db
+spec:
+  database: {{ .Values.postgresql.database }}
+---
+apiVersion: db.movetokube.com/v1alpha1
+kind: PostgresUser
+metadata:
+  name: {{ include "n8n.fullname" . }}-db-user
+spec:
+  role: {{ .Values.postgresql.user }}
+  database: {{ include "n8n.fullname" . }}-db
+  secretName: {{ include "n8n.fullname" . }}-db-credentials
+  privileges: OWNER
+  secretTemplate:
+    DB_POSTGRESDB_HOST: "{{`{{.Hostname}}`}}"
+    DB_POSTGRESDB_PORT: "{{`{{.Port}}`}}"
+    DB_POSTGRESDB_DATABASE: "{{`{{.Database}}`}}"
+    DB_POSTGRESDB_USER: "{{`{{.Role}}`}}"
+    DB_POSTGRESDB_PASSWORD: "{{`{{.Password}}`}}"
