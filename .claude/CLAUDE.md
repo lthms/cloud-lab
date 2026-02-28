@@ -16,6 +16,11 @@ variables, etc.), ALWAYS verify the exact syntax against official
 documentation first. Do not guess flag names or assume conventions from
 other tools.
 
+When claiming that a tool, platform, or service has a specific feature
+or capability (e.g., a built-in node, an API endpoint, a CLI flag),
+ALWAYS back it up with an external source (official docs, repository
+link, etc.).
+
 # Conventions
 
 ## Commits
