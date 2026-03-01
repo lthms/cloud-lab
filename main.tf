@@ -104,6 +104,41 @@ resource "helm_release" "n8n" {
   }
 }
 
+resource "random_password" "conduwuit_registration_token" {
+  length  = 32
+  special = false
+}
+
+resource "random_password" "conduwuit_admin" {
+  length  = 32
+  special = false
+}
+
+resource "helm_release" "conduwuit" {
+  name  = "conduwuit"
+  chart = "${path.module}/charts/conduwuit"
+
+  set_sensitive {
+    name  = "registrationToken"
+    value = random_password.conduwuit_registration_token.result
+  }
+
+  set_sensitive {
+    name  = "admin.password"
+    value = random_password.conduwuit_admin.result
+  }
+}
+
+output "conduwuit_registration_token" {
+  value     = random_password.conduwuit_registration_token.result
+  sensitive = true
+}
+
+output "conduwuit_admin_password" {
+  value     = random_password.conduwuit_admin.result
+  sensitive = true
+}
+
 output "miniflux_admin_password" {
   value     = random_password.miniflux_admin.result
   sensitive = true

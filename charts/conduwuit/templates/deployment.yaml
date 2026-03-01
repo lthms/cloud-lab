@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "conduwuit.fullname" . }}
+  labels:
+    {{- include "conduwuit.labels" . | nindent 4 }}
+  annotations:
+    keel.sh/policy: force
+    keel.sh/trigger: poll
+    keel.sh/match-tag: "true"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "conduwuit.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "conduwuit.selectorLabels" . | nindent 8 }}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+    spec:
+      enableServiceLinks: false
+      containers:
+        - name: conduwuit
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          command: ["/sbin/conduwuit"]
+          args:
+            - --execute
+            - "users create admin $(ADMIN_PASSWORD)"
+          env:
+            - name: CONDUWUIT_CONFIG
+              value: /etc/continuwuity.toml
+            - name: CONDUWUIT_REGISTRATION_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "conduwuit.fullname" . }}
+                  key: registration-token
+            - name: ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "conduwuit.fullname" . }}
+                  key: admin-password
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          ports:
+            - containerPort: 8008
+          livenessProbe:
+            httpGet:
+              path: /_matrix/client/versions
+              port: 8008
+          readinessProbe:
+            httpGet:
+              path: /_matrix/client/versions
+              port: 8008
+          volumeMounts:
+            - name: config
+              mountPath: /etc/continuwuity.toml
+              subPath: continuwuity.toml
+              readOnly: true
+            - name: data
+              mountPath: /var/lib/continuwuity
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "conduwuit.fullname" . }}
+        - name: data
+          persistentVolumeClaim:
+            claimName: {{ include "conduwuit.fullname" . }}

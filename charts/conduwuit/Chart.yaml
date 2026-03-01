@@ -1,0 +1,5 @@
+apiVersion: v2
+name: conduwuit
+description: A Helm chart for deploying Continuwuity Matrix homeserver
+version: 0.1.0
+appVersion: "0.5.5"

@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "conduwuit.fullname" . }}
+  labels:
+    {{- include "conduwuit.labels" . | nindent 4 }}
+data:
+  continuwuity.toml: |
+    [global]
+    server_name = {{ .Values.domain | quote }}
+    database_path = "/var/lib/continuwuity"
+    address = ["0.0.0.0"]
+    port = 8008
+    allow_registration = true
+    allow_federation = false
+    admin_execute_errors_ignore = true
+    log = "info"
+
+    [global.well_known]
+    client = "https://{{ .Values.domain }}"

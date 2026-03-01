@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "conduwuit.fullname" . }}
+  labels:
+    {{- include "conduwuit.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8008
+      targetPort: 8008
+  selector:
+    {{- include "conduwuit.selectorLabels" . | nindent 4 }}
