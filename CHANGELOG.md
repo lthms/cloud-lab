@@ -2,6 +2,7 @@
 
 ## 2026-03-01
 
+- `conduwuit` 0.1.1: Recreate strategy for RocksDB lock safety
 - `conduwuit` 0.1.0: Continuwuity Matrix homeserver (no federation)
 - `n8n` 0.1.1: Enable dropOnDelete for operator-managed PostgreSQL database
 - `soju` 0.1.2: Enable dropOnDelete for operator-managed PostgreSQL database
