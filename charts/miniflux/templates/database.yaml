@@ -4,6 +4,7 @@ metadata:
   name: {{ include "miniflux.fullname" . }}-db
 spec:
   database: {{ .Values.postgresql.database }}
+  dropOnDelete: true
 ---
 apiVersion: db.movetokube.com/v1alpha1
 kind: PostgresUser

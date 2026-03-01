@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-03-01
+
+- `n8n` 0.1.1: Enable dropOnDelete for operator-managed PostgreSQL database
+- `soju` 0.1.2: Enable dropOnDelete for operator-managed PostgreSQL database
+- `miniflux` 0.1.2: Enable dropOnDelete for operator-managed PostgreSQL database
+
 ## 2026-02-28
 
 - `n8n` 0.1.0: n8n workflow automation with operator-managed PostgreSQL
