@@ -23,6 +23,10 @@ spec:
         - name: n8n
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           env:
+            - name: N8N_HOST
+              value: "0.0.0.0"
+            - name: WEBHOOK_URL
+              value: "https://{{ .Values.domain }}"
             - name: DB_TYPE
               value: postgresdb
             - name: DB_POSTGRESDB_HOST
