@@ -27,6 +27,8 @@ spec:
               value: "0.0.0.0"
             - name: WEBHOOK_URL
               value: "https://{{ .Values.domain }}"
+            - name: N8N_PROXY_HOPS
+              value: "1"
             - name: DB_TYPE
               value: postgresdb
             - name: DB_POSTGRESDB_HOST

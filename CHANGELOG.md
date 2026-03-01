@@ -2,6 +2,7 @@
 
 ## 2026-03-01
 
+- `n8n` 0.1.3: Trust reverse proxy headers
 - `n8n` 0.1.2: Listen on all interfaces and set public webhook URL
 - `conduwuit` 0.1.1: Recreate strategy for RocksDB lock safety
 - `conduwuit` 0.1.0: Continuwuity Matrix homeserver (no federation)
