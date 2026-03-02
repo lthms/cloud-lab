@@ -3,3 +3,4 @@
 elsa.yaml
 charts/*/charts/
 charts/*/*.tgz
+site/

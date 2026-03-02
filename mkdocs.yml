@@ -1,0 +1,23 @@
+site_name: lthms cloud lab
+site_description: Personal Kubernetes homelab — infrastructure, services, and integrations
+repo_url: https://github.com/lthms/lthms-cloud-lab
+
+theme:
+  name: material
+
+nav:
+  - Overview: index.md
+  - Getting started: getting-started.md
+  - Deployment: deployment.md
+  - DNS: dns.md
+  - Services:
+      - services/index.md
+      - PostgreSQL: services/postgresql.md
+      - soap.coffee: services/soap-coffee.md
+      - Miniflux: services/miniflux.md
+      - soju: services/soju.md
+      - n8n: services/n8n.md
+      - Conduwuit: services/conduwuit.md
+  - Integrations:
+      - integrations/index.md
+      - Matrix + n8n: integrations/matrix-n8n.md

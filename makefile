@@ -1,4 +1,4 @@
-.PHONY: init deps plan deploy destroy
+.PHONY: init deps plan deploy destroy docs build-docs
 
 init:
 	git config core.hooksPath .githooks
@@ -15,3 +15,9 @@ deploy: deps
 
 destroy:
 	terraform destroy -var-file=main.tfvars
+
+docs:
+	zensical serve
+
+build-docs:
+	zensical build
