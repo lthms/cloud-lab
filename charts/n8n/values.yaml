@@ -1,6 +1,6 @@
 image:
   repository: docker.n8n.io/n8nio/n8n
-  tag: "2.9.2"
+  tag: "2.11.1"
 
 domain: tasks.soap.coffee
 
