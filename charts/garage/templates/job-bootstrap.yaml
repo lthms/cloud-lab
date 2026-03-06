@@ -67,6 +67,13 @@ spec:
                 echo "Key already exists, skipping"
               fi
 
+              # Ensure key has createBucket permission
+              echo "Granting createBucket permission..."
+              curl -sf -X POST -H "$AUTH" \
+                -H "Content-Type: application/json" \
+                "$ADMIN_URL/v2/UpdateKey?id=$S3_ACCESS_KEY" \
+                -d "{\"permissions\":{\"createBucket\":true}}"
+
               echo "Bootstrap complete!"
           env:
             - name: ADMIN_TOKEN

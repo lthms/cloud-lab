@@ -2,6 +2,7 @@
 
 ## 2026-03-06
 
+- `garage` 0.1.1: Grant createBucket permission to S3 key during bootstrap
 - `garage` 0.1.0: Garage S3-compatible object storage with web serving
 
 ## 2026-03-01
