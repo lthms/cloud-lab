@@ -72,7 +72,7 @@ spec:
               curl -sf -X POST -H "$AUTH" \
                 -H "Content-Type: application/json" \
                 "$ADMIN_URL/v2/UpdateKey?id=$S3_ACCESS_KEY" \
-                -d '{"createBucket":true}'
+                -d '{"allow":{"createBucket":true}}'
 
               echo "Bootstrap complete!"
           env:
