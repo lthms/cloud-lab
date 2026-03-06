@@ -1,0 +1,86 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "garage.fullname" . }}-bootstrap
+  labels:
+    {{- include "garage.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: bootstrap
+          image: alpine:3
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              apk add --no-cache curl jq >/dev/null 2>&1
+              set -e
+              ADMIN_URL="http://{{ include "garage.fullname" . }}:3903"
+              AUTH="Authorization: Bearer $ADMIN_TOKEN"
+
+              echo "Waiting for Garage..."
+              until curl -sf -o /dev/null -H "$AUTH" \
+                "$ADMIN_URL/v2/GetClusterStatus"; do
+                sleep 2
+              done
+
+              # Check if layout already has roles (idempotency)
+              ROLES=$(curl -sf -H "$AUTH" \
+                "$ADMIN_URL/v2/GetClusterLayout" | jq '.roles | length')
+
+              if [ "$ROLES" -eq 0 ]; then
+                NODE_ID=$(curl -sf -H "$AUTH" \
+                  "$ADMIN_URL/v2/GetClusterStatus" | jq -r '.nodes[0].id')
+                echo "Assigning layout for node $NODE_ID..."
+
+                curl -sf -X POST -H "$AUTH" \
+                  -H "Content-Type: application/json" \
+                  "$ADMIN_URL/v2/UpdateClusterLayout" \
+                  -d "{\"roles\":[{\"id\":\"$NODE_ID\",\"zone\":\"dc1\",\"capacity\":{{ .Values.storage.capacityBytes | int64 }},\"tags\":[]}]}"
+
+                VERSION=$(curl -sf -H "$AUTH" \
+                  "$ADMIN_URL/v2/GetClusterLayout" | jq '.version + 1')
+                curl -sf -X POST -H "$AUTH" \
+                  -H "Content-Type: application/json" \
+                  "$ADMIN_URL/v2/ApplyClusterLayout" \
+                  -d "{\"version\":$VERSION}"
+
+                echo "Layout applied (version $VERSION)"
+              else
+                echo "Layout already configured, skipping"
+              fi
+
+              # Check if key already exists (idempotency)
+              if ! curl -sf -o /dev/null -H "$AUTH" \
+                "$ADMIN_URL/v2/GetKeyInfo?id=$S3_ACCESS_KEY"; then
+                echo "Importing S3 key..."
+                curl -sf -X POST -H "$AUTH" \
+                  -H "Content-Type: application/json" \
+                  "$ADMIN_URL/v2/ImportKey" \
+                  -d "{\"accessKeyId\":\"$S3_ACCESS_KEY\",\"secretAccessKey\":\"$S3_SECRET_KEY\",\"name\":\"default\"}"
+                echo "Key imported"
+              else
+                echo "Key already exists, skipping"
+              fi
+
+              echo "Bootstrap complete!"
+          env:
+            - name: ADMIN_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "garage.fullname" . }}
+                  key: admin-token
+            - name: S3_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "garage.fullname" . }}
+                  key: s3-access-key
+            - name: S3_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "garage.fullname" . }}
+                  key: s3-secret-key

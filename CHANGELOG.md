@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-03-06
+
+- `garage` 0.1.0: Garage S3-compatible object storage with web serving
+
 ## 2026-03-01
 
 - `n8n` 0.1.3: Trust reverse proxy headers

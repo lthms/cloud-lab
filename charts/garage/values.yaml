@@ -1,0 +1,24 @@
+image:
+  repository: dxflrs/garage
+  tag: v2.2.0
+
+domain:
+  s3: attic.soap.coffee
+  web: "*.attic.soap.coffee"
+
+garage:
+  rpcSecret: ""
+  adminToken: ""
+  s3AccessKey: ""
+  s3SecretKey: ""
+  s3Region: garage
+  webRootDomain: .attic.soap.coffee
+
+storage:
+  size: 10Gi
+  capacityBytes: 10737418240
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi

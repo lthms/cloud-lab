@@ -1,0 +1,26 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "garage.fullname" . }}-s3
+  labels:
+    {{- include "garage.labels" . | nindent 4 }}
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    external-dns.alpha.kubernetes.io/ttl: "300"
+    cert-manager.io/cluster-issuer: letsencrypt
+spec:
+  tls:
+    - hosts:
+        - {{ .Values.domain.s3 }}
+      secretName: {{ include "garage.fullname" . }}-s3-tls
+  rules:
+    - host: {{ .Values.domain.s3 }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "garage.fullname" . }}
+                port:
+                  number: 3900

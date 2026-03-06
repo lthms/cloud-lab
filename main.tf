@@ -129,6 +129,70 @@ resource "helm_release" "conduwuit" {
   }
 }
 
+resource "random_id" "garage_rpc_secret" {
+  byte_length = 32
+}
+
+resource "random_password" "garage_admin_token" {
+  length  = 32
+  special = false
+}
+
+resource "random_id" "garage_s3_access_key" {
+  byte_length = 12
+}
+
+resource "random_id" "garage_s3_secret_key" {
+  byte_length = 32
+}
+
+locals {
+  garage_s3_access_key = "GK${random_id.garage_s3_access_key.hex}"
+  garage_s3_secret_key = random_id.garage_s3_secret_key.hex
+}
+
+resource "helm_release" "garage" {
+  name  = "garage"
+  chart = "${path.module}/charts/garage"
+
+  wait_for_jobs = true
+
+  set_sensitive {
+    name  = "garage.rpcSecret"
+    value = random_id.garage_rpc_secret.hex
+  }
+
+  set_sensitive {
+    name  = "garage.adminToken"
+    value = random_password.garage_admin_token.result
+  }
+
+  set_sensitive {
+    name  = "garage.s3AccessKey"
+    value = local.garage_s3_access_key
+  }
+
+  set_sensitive {
+    name  = "garage.s3SecretKey"
+    value = local.garage_s3_secret_key
+  }
+}
+
+output "garage_admin_token" {
+  value     = random_password.garage_admin_token.result
+  sensitive = true
+}
+
+output "garage_s3_access_key" {
+  value     = local.garage_s3_access_key
+  sensitive = true
+}
+
+output "garage_s3_secret_key" {
+  value     = local.garage_s3_secret_key
+  sensitive = true
+}
+
 output "conduwuit_registration_token" {
   value     = random_password.conduwuit_registration_token.result
   sensitive = true
