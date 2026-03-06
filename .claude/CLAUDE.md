@@ -6,6 +6,13 @@ Helm chart or operator already solves the problem. Maintenance burden and
 community support are strong signals in favor of adopting a third-party
 solution.
 
+# Versions
+
+When deploying a new service, ALWAYS use the latest stable release.
+Verify the current version against the project's official website,
+GitHub releases, or Docker Hub tags before writing any chart. Do not
+blindly trust version numbers from plans, conversations, or memory.
+
 # Deployment
 
 NEVER run `make deploy`, `make destroy`, or `terraform apply`/`terraform
