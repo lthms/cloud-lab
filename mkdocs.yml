@@ -18,6 +18,7 @@ nav:
       - soju: services/soju.md
       - n8n: services/n8n.md
       - Conduwuit: services/conduwuit.md
+      - Garage: services/garage.md
   - Integrations:
       - integrations/index.md
       - Matrix + n8n: integrations/matrix-n8n.md

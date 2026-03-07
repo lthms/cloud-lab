@@ -30,4 +30,23 @@ for chart_yaml in $(git diff --cached --name-only -- 'charts/*/Chart.yaml'); do
     fi
 done
 
+# For each chart, verify it has a service documentation page and appears
+# in the mkdocs nav.
+
+for chart_dir in charts/*/; do
+    chart_name=$(basename "$chart_dir")
+    service_page="docs/services/${chart_name}.md"
+
+    if [ ! -f "$service_page" ]; then
+        echo "error: chart '$chart_name' has no service page ($service_page)"
+        status=1
+        continue
+    fi
+
+    if ! grep -q "services/${chart_name}.md" mkdocs.yml; then
+        echo "error: $service_page is not listed in mkdocs.yml nav"
+        status=1
+    fi
+done
+
 exit $status
