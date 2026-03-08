@@ -14,7 +14,7 @@ terraform {
     }
     vultr = {
       source  = "vultr/vultr"
-      version = "2.29.1"
+      version = "2.30.1"
     }
     random = {
       source  = "hashicorp/random"
