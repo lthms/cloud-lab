@@ -2,35 +2,36 @@ resource "helm_release" "soap_coffee_live" {
   name  = "soap-coffee-live"
   chart = "${path.module}/charts/soap-coffee"
 
-  set {
-    name  = "image.tag"
-    value = var.live_image_tag
-  }
-
-  set {
-    name  = "domain"
-    value = var.live_domain
-  }
+  set = [
+    {
+      name  = "image.tag"
+      value = var.live_image_tag
+    },
+    {
+      name  = "domain"
+      value = var.live_domain
+    },
+  ]
 }
 
 resource "helm_release" "soap_coffee_staging" {
   name  = "soap-coffee-staging"
   chart = "${path.module}/charts/soap-coffee"
 
-  set {
-    name  = "image.tag"
-    value = var.staging_image_tag
-  }
-
-  set {
-    name  = "domain"
-    value = var.staging_domain
-  }
-
-  set {
-    name  = "staging"
-    value = "true"
-  }
+  set = [
+    {
+      name  = "image.tag"
+      value = var.staging_image_tag
+    },
+    {
+      name  = "domain"
+      value = var.staging_domain
+    },
+    {
+      name  = "staging"
+      value = "true"
+    },
+  ]
 }
 
 resource "random_password" "postgresql_superuser" {
@@ -47,15 +48,16 @@ resource "helm_release" "postgresql" {
   name  = "postgresql"
   chart = "${path.module}/charts/postgresql"
 
-  set_sensitive {
-    name  = "password"
-    value = random_password.postgresql_superuser.result
-  }
-
-  set_sensitive {
-    name  = "ext-postgres-operator.postgres.password"
-    value = random_password.postgresql_superuser.result
-  }
+  set_sensitive = [
+    {
+      name  = "password"
+      value = random_password.postgresql_superuser.result
+    },
+    {
+      name  = "ext-postgres-operator.postgres.password"
+      value = random_password.postgresql_superuser.result
+    },
+  ]
 }
 
 resource "helm_release" "miniflux" {
@@ -64,10 +66,12 @@ resource "helm_release" "miniflux" {
 
   depends_on = [helm_release.postgresql]
 
-  set_sensitive {
-    name  = "admin.password"
-    value = random_password.miniflux_admin.result
-  }
+  set_sensitive = [
+    {
+      name  = "admin.password"
+      value = random_password.miniflux_admin.result
+    },
+  ]
 }
 
 resource "random_password" "soju_admin" {
@@ -81,10 +85,12 @@ resource "helm_release" "soju" {
 
   depends_on = [helm_release.postgresql]
 
-  set_sensitive {
-    name  = "admin.password"
-    value = random_password.soju_admin.result
-  }
+  set_sensitive = [
+    {
+      name  = "admin.password"
+      value = random_password.soju_admin.result
+    },
+  ]
 }
 
 resource "random_password" "n8n_encryption_key" {
@@ -98,10 +104,12 @@ resource "helm_release" "n8n" {
 
   depends_on = [helm_release.postgresql]
 
-  set_sensitive {
-    name  = "encryptionKey"
-    value = random_password.n8n_encryption_key.result
-  }
+  set_sensitive = [
+    {
+      name  = "encryptionKey"
+      value = random_password.n8n_encryption_key.result
+    },
+  ]
 }
 
 resource "random_password" "conduwuit_registration_token" {
@@ -118,15 +126,16 @@ resource "helm_release" "conduwuit" {
   name  = "conduwuit"
   chart = "${path.module}/charts/conduwuit"
 
-  set_sensitive {
-    name  = "registrationToken"
-    value = random_password.conduwuit_registration_token.result
-  }
-
-  set_sensitive {
-    name  = "admin.password"
-    value = random_password.conduwuit_admin.result
-  }
+  set_sensitive = [
+    {
+      name  = "registrationToken"
+      value = random_password.conduwuit_registration_token.result
+    },
+    {
+      name  = "admin.password"
+      value = random_password.conduwuit_admin.result
+    },
+  ]
 }
 
 resource "random_id" "garage_rpc_secret" {
@@ -157,25 +166,24 @@ resource "helm_release" "garage" {
 
   wait_for_jobs = true
 
-  set_sensitive {
-    name  = "garage.rpcSecret"
-    value = random_id.garage_rpc_secret.hex
-  }
-
-  set_sensitive {
-    name  = "garage.adminToken"
-    value = random_password.garage_admin_token.result
-  }
-
-  set_sensitive {
-    name  = "garage.s3AccessKey"
-    value = local.garage_s3_access_key
-  }
-
-  set_sensitive {
-    name  = "garage.s3SecretKey"
-    value = local.garage_s3_secret_key
-  }
+  set_sensitive = [
+    {
+      name  = "garage.rpcSecret"
+      value = random_id.garage_rpc_secret.hex
+    },
+    {
+      name  = "garage.adminToken"
+      value = random_password.garage_admin_token.result
+    },
+    {
+      name  = "garage.s3AccessKey"
+      value = local.garage_s3_access_key
+    },
+    {
+      name  = "garage.s3SecretKey"
+      value = local.garage_s3_secret_key
+    },
+  ]
 }
 
 output "garage_admin_token" {
