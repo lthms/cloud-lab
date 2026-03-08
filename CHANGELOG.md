@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-03-08
+
+- `n8n` 0.1.4: Update n8n to v2.11.1, Recreate strategy for lock safety
+
 ## 2026-03-06
 
 - `garage` 0.1.3: Fix createBucket permission grant (use allow/deny wrapper per source code)
