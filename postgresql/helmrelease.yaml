@@ -1,0 +1,64 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: ext-postgres-operator
+spec:
+  interval: 1h
+  chart:
+    spec:
+      chart: ext-postgres-operator
+      version: "3.0.0"
+      sourceRef:
+        kind: HelmRepository
+        name: movetokube
+      interval: 24h
+  install:
+    crds: Create
+  upgrade:
+    crds: CreateReplace
+  values:
+    existingSecret: postgresql
+    env:
+      # Keep the secret name a service asks for, instead of a generated one.
+      KEEP_SECRET_NAME: "true"
+    resources:
+      requests:
+        cpu: 10m
+        memory: 64Mi
+  # The chart exposes no initContainers value, so the gate is patched onto the
+  # rendered Deployment. This is what makes ordering a non-issue: the operator
+  # only starts once postgres answers, so every Postgres/PostgresUser CR
+  # succeeds on its first reconcile and never enters exponential backoff.
+  postRenderers:
+    - kustomize:
+        patches:
+          - target:
+              kind: Deployment
+              name: ext-postgres-operator
+            patch: |
+              apiVersion: apps/v1
+              kind: Deployment
+              metadata:
+                name: ext-postgres-operator
+              spec:
+                template:
+                  spec:
+                    initContainers:
+                      - name: wait-for-postgres
+                        image: postgres:17
+                        command:
+                          - sh
+                          - -c
+                          - until pg_isready -q -h postgresql; do sleep 2; done
+                        # The chart sets runAsNonRoot on the pod, and the
+                        # postgres image starts as root; pin its uid.
+                        securityContext:
+                          runAsUser: 999
+                          runAsGroup: 999
+                          allowPrivilegeEscalation: false
+                          capabilities:
+                            drop: ["ALL"]
+                        resources:
+                          requests:
+                            cpu: 10m
+                            memory: 32Mi
