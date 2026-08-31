@@ -1,9 +1,4 @@
 creation_rules:
-  # Only the superuser password is sensitive
-  - path_regex: ^postgresql/secret\.yaml$
-    encrypted_regex: ^POSTGRES_PASS$
-    age: age1kw23mavskc3ueq62mfstze85aftv5qmmd76x5x4d27tnz9rjlsasxy8fg9
-  # Default for anything not listed above: encrypt the whole payload
   - path_regex: .*\.yaml$
     encrypted_regex: ^(data|stringData)$
     age: age1kw23mavskc3ueq62mfstze85aftv5qmmd76x5x4d27tnz9rjlsasxy8fg9
