@@ -1,0 +1,21 @@
+---
+# The database itself, carved out of the shared server by
+# ext-postgres-operator.
+apiVersion: db.movetokube.com/v1alpha1
+kind: Postgres
+metadata:
+  name: miniflux
+spec:
+  database: miniflux
+  dropOnDelete: true
+---
+# The role Miniflux connects as. OWNER because it runs its own migrations.
+apiVersion: db.movetokube.com/v1alpha1
+kind: PostgresUser
+metadata:
+  name: miniflux
+spec:
+  role: miniflux
+  database: miniflux
+  secretName: db
+  privileges: OWNER
