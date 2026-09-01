@@ -1,0 +1,31 @@
+name: Deploy (check)
+on:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  kustomization:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      # Tool versions, schema locations and the CRD set live in raya, which is
+      # what installs those CRDs in the first place. `.` is exactly the path
+      # the cloud-lab Flux Kustomization applies.
+      - uses: lthms/raya/.github/actions/validate-manifests@main
+        with:
+          paths: .
+
+      # Nothing above would notice a Secret committed in the clear: sops leaves
+      # the manifest a valid Secret either way. Assert the encryption ran.
+      - name: Refuse an unencrypted Secret
+        run: |
+          set -euo pipefail
+          failed=0
+          for manifest in $(grep -rl '^kind: Secret' --include='*.yaml' .); do
+              if ! grep -q '^sops:' "${manifest}"; then
+                  echo "::error file=${manifest}::Secret is not sops-encrypted"
+                  failed=1
+              fi
+          done
+          exit "${failed}"
