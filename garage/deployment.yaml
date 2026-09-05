@@ -1,0 +1,82 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: garage
+spec:
+  replicas: 1
+  # One node holding one ReadWriteOnce volume: a rolling update would deadlock
+  # on the new pod waiting for the old one to release it.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: garage
+  template:
+    metadata:
+      labels:
+        app: garage
+    spec:
+      # The Service would otherwise inject GARAGE_PORT=tcp://10.43.x.x:3900
+      # and friends, and garage reads its own GARAGE_* variables.
+      enableServiceLinks: false
+      containers:
+        - name: garage
+          image: dxflrs/garage:v2.2.0
+          ports:
+            - name: s3
+              containerPort: 3900
+            - name: rpc
+              containerPort: 3901
+            - name: web
+              containerPort: 3902
+            - name: admin
+              containerPort: 3903
+          env:
+            - name: GARAGE_RPC_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: garage
+                  key: rpc-secret
+            - name: GARAGE_ADMIN_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: garage
+                  key: admin-token
+          volumeMounts:
+            - name: config
+              mountPath: /etc/garage.toml
+              subPath: garage.toml
+              readOnly: true
+            - name: data
+              mountPath: /var/lib/garage
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+          # The admin API's /health reports the cluster unhealthy until a
+          # layout exists, and the layout is assigned by a Job that reaches
+          # garage through the Service — which only routes to ready endpoints.
+          # An open socket is the most this can check without that deadlock.
+          readinessProbe:
+            tcpSocket:
+              port: admin
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: admin
+            periodSeconds: 30
+            failureThreshold: 5
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+      volumes:
+        - name: config
+          configMap:
+            name: garage
+        - name: data
+          persistentVolumeClaim:
+            claimName: garage
+

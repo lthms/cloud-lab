@@ -1,0 +1,28 @@
+---
+# Path-style addressing only (s3.xmu.mx/bucket). Virtual-hosted style would
+# need a wildcard name and certificate, so clients must be told to use paths
+# (`aws --endpoint-url https://s3.xmu.mx` with `addressing_style = path`).
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: garage
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts:
+        - s3.xmu.mx
+      secretName: garage-tls
+  rules:
+    - host: s3.xmu.mx
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: garage
+                port:
+                  name: s3
+

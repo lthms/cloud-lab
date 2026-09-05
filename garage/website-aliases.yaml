@@ -1,0 +1,73 @@
+---
+# Garage has two kinds of names for buckets: “local” and “global.” The local
+# name is the one used by the S3 API, while the global name is used for serving
+# the bucket content.
+#
+# `aws mb` only ever assigns the local name, and does not provide the
+# capability to set the global one. We add a CronJob to fill that gap
+# automatically.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: garage-website-aliases
+spec:
+  schedule: "* * * * *"
+  # The work is idempotent but not concurrency-safe: two runs could both see
+  # the same bucket unaliased and race on AddBucketAlias.
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: reconcile
+              image: alpine:3.22
+              command: ["/bin/sh", "-c"]
+              args:
+                - |
+                  set -e
+                  apk add --no-cache curl jq >/dev/null
+
+                  ADMIN_URL="http://garage:3903"
+                  AUTH="Authorization: Bearer ${ADMIN_TOKEN}"
+
+                  # ListBuckets answers with the aliases but not with the
+                  # website flag, so the candidates are narrowed first and
+                  # only those are looked up one by one.
+                  curl -sf -H "${AUTH}" "${ADMIN_URL}/v2/ListBuckets" \
+                      | jq -c '.[] | select(.globalAliases | length == 0)' \
+                      | while read -r bucket; do
+                      id="$(echo "${bucket}" | jq -r '.id')"
+                      alias="$(echo "${bucket}" | jq -r '.localAliases[0].alias // empty')"
+
+                      [ -n "${alias}" ] || continue
+
+                      website="$(curl -sf -H "${AUTH}" \
+                          "${ADMIN_URL}/v2/GetBucketInfo?id=${id}" \
+                          | jq -r '.websiteAccess')"
+                      [ "${website}" = "true" ] || continue
+
+                      if curl -sf -X POST -H "${AUTH}" \
+                          -H "Content-Type: application/json" \
+                          "${ADMIN_URL}/v2/AddBucketAlias" \
+                          -d "{\"bucketId\":\"${id}\",\"globalAlias\":\"${alias}\"}" \
+                          >/dev/null; then
+                          echo "aliased ${id} as ${alias}"
+                      else
+                          echo "could not alias ${id} as ${alias}: name taken?"
+                      fi
+                  done
+              env:
+                - name: ADMIN_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: garage
+                      key: admin-token
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 32Mi
+
