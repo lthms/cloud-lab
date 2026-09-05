@@ -6,6 +6,7 @@ metadata:
   name: soap-coffee
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt
+    traefik.ingress.kubernetes.io/router.middlewares: cloud-lab-soap-coffee-root@kubernetescrd
 spec:
   ingressClassName: traefik
   tls:
@@ -23,3 +24,14 @@ spec:
                 name: garage
                 port:
                   name: web
+
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: soap-coffee-root
+spec:
+  redirectRegex:
+    regex: ^https://soap\.coffee/?$
+    replacement: https://soap.coffee/~lthms/
+    permanent: false
