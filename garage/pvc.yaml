@@ -1,0 +1,15 @@
+---
+# Both the metadata store (LMDB) and the data blocks live here. Hetzner
+# volumes can be grown in place, never shrunk, so this only goes up.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: garage
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: hcloud-volumes
+  resources:
+    requests:
+      storage: 50Gi
+

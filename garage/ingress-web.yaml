@@ -1,0 +1,34 @@
+---
+# Buckets published as static sites, one name each: a bucket called `foo` is
+# served at foo.pages.xmu.mx. That mapping is garage's `root_domain`, so the
+# wildcard is what makes any of them reachable — hence a certificate over the
+# whole subdomain, which the letsencrypt issuer can only answer because it
+# solves DNS-01.
+#
+# A bucket is only served once it has a website configuration:
+#
+#   aws --profile garage s3 website s3://foo --index-document index.html
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: garage-web
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts:
+        - "*.pages.xmu.mx"
+      secretName: garage-web-tls
+  rules:
+    - host: "*.pages.xmu.mx"
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: garage
+                port:
+                  name: web
+

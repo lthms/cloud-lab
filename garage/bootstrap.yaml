@@ -1,0 +1,102 @@
+---
+# Bootstrap of a fresh, unconfigured node. Does not support a resize of the PVC
+# out of the box.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: garage-bootstrap
+spec:
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: bootstrap
+          image: alpine:3
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              set -e
+              apk add --no-cache curl jq >/dev/null
+
+              ADMIN_URL="http://garage:3903"
+              AUTH="Authorization: Bearer ${ADMIN_TOKEN}"
+
+              echo "Waiting for garage..."
+              until curl -sf -o /dev/null -H "${AUTH}" \
+                  "${ADMIN_URL}/v2/GetClusterStatus"; do
+                  sleep 2
+              done
+
+              # An assigned role is what turns the node into storage. Garage
+              # reports it as part of the layout, so a non-empty roles list
+              # means this ran already.
+              roles="$(curl -sf -H "${AUTH}" \
+                  "${ADMIN_URL}/v2/GetClusterLayout" | jq '.roles | length')"
+
+              if [ "${roles}" -eq 0 ]; then
+                  node="$(curl -sf -H "${AUTH}" \
+                      "${ADMIN_URL}/v2/GetClusterStatus" | jq -r '.nodes[0].id')"
+                  echo "Assigning the layout to ${node}..."
+
+                  # 45G of a 50Gi volume: the LMDB metadata store shares it.
+                  curl -sf -X POST -H "${AUTH}" \
+                      -H "Content-Type: application/json" \
+                      "${ADMIN_URL}/v2/UpdateClusterLayout" \
+                      -d "{\"roles\":[{\"id\":\"${node}\",\"zone\":\"hel1\",\"capacity\":48318382080,\"tags\":[]}]}"
+
+                  # A layout change is staged, then applied under the version
+                  # number it is expected to produce.
+                  version="$(curl -sf -H "${AUTH}" \
+                      "${ADMIN_URL}/v2/GetClusterLayout" | jq '.version + 1')"
+                  curl -sf -X POST -H "${AUTH}" \
+                      -H "Content-Type: application/json" \
+                      "${ADMIN_URL}/v2/ApplyClusterLayout" \
+                      -d "{\"version\":${version}}"
+
+                  echo "Layout applied (version ${version})"
+              else
+                  echo "Layout already assigned"
+              fi
+
+              # ImportKey takes the pair from the Secret, so the credentials
+              # stay something this repository owns rather than something the
+              # cluster generated and only it knows.
+              if curl -sf -o /dev/null -H "${AUTH}" \
+                  "${ADMIN_URL}/v2/GetKeyInfo?id=${S3_ACCESS_KEY}"; then
+                  echo "Key already imported"
+              else
+                  echo "Importing the S3 key..."
+                  curl -sf -X POST -H "${AUTH}" \
+                      -H "Content-Type: application/json" \
+                      "${ADMIN_URL}/v2/ImportKey" \
+                      -d "{\"accessKeyId\":\"${S3_ACCESS_KEY}\",\"secretAccessKey\":\"${S3_SECRET_KEY}\",\"name\":\"default\"}"
+              fi
+
+              # Buckets are then created by whoever holds the key.
+              curl -sf -X POST -H "${AUTH}" \
+                  -H "Content-Type: application/json" \
+                  "${ADMIN_URL}/v2/UpdateKey?id=${S3_ACCESS_KEY}" \
+                  -d '{"allow":{"createBucket":true}}'
+
+              echo "Bootstrap complete"
+          env:
+            - name: ADMIN_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: garage
+                  key: admin-token
+            - name: S3_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: garage
+                  key: s3-access-key
+            - name: S3_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: garage
+                  key: s3-secret-key
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+
