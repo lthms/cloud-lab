@@ -1,0 +1,32 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: bots
+spec:
+  interval: 10m
+  timeout: 20m
+  releaseName: bots
+  chartRef:
+    kind: OCIRepository
+    name: mediawiki
+  values:
+    id: bots
+    title: Brains on the shelf
+    hostname: bots.xmu.mx
+    database:
+      name: mediawiki
+    appSecret: mediawiki-app
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: mediawiki
+spec:
+  interval: 10m
+  url: oci://ghcr.io/lthms/raya-mediawiki/charts/mediawiki
+  ref:
+    # 0.0.0-dev.8.1.g6252571ac4ad
+    digest: sha256:77a389212357174ce547654e29a9b3210df4d6878317145132f09b61c4cb50f5
+  layerSelector:
+    mediaType: application/vnd.cncf.helm.chart.content.v1.tar+gzip
+    operation: copy
