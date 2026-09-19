@@ -25,8 +25,8 @@ spec:
   interval: 10m
   url: oci://ghcr.io/lthms/raya-mediawiki/charts/mediawiki
   ref:
-    # 0.0.0-dev.10.1.gcb9891c6e9d3
-    digest: sha256:9bc60a364e1e48684ada45023b9f02c68e2432c7b3a28e09c5574040dd3af7e5
+    # 0.0.0-dev.11.1.g37cf11ffbed2
+    digest: sha256:9586447d0d350b1282b592992bc76163b6d24ab5174751a0e1868f7f8ab06e21
   layerSelector:
     mediaType: application/vnd.cncf.helm.chart.content.v1.tar+gzip
     operation: copy
