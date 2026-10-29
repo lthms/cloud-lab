@@ -1,6 +1,6 @@
 image:
   repository: codeberg.org/emersion/soju
-  tag: "v0.10.1"
+  tag: "v0.11.1"
 
 domain: irc.soap.coffee
 
